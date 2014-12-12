@@ -47,6 +47,20 @@ type node struct {
 	SplatName  string
 }
 
+// Index returns the index of the first instance of s in sa, or -1 if s is not present in sa.
+func Index(sa []string, s string) int {
+	for idx, ss := range sa {
+		if ss == s {
+			return idx
+		}
+	}
+	return -1
+}
+
+func Contains(sa []string, s string) bool {
+	return Index(sa, s) >= 0
+}
+
 func (n *node) addRoute(httpMethod, pathExp string, route interface{}, usedParams []string) error {
 
 	if len(pathExp) == 0 {
@@ -75,13 +89,10 @@ func (n *node) addRoute(httpMethod, pathExp string, route interface{}, usedParam
 		name, remaining = splitParam(remaining)
 
 		// Check param name is unique
-		for _, e := range usedParams {
-			if e == name {
-				return errors.New(
-					fmt.Sprintf("A route can't have two placeholders with the same name: %s", name),
-				)
-			}
+		if Contains(usedParams, name) {
+			return fmt.Errorf("A route can't have two placeholders with the same name: %s", name)
 		}
+
 		usedParams = append(usedParams, name)
 
 		if n.ParamChild == nil {
